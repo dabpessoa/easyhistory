@@ -29,8 +29,8 @@ public class EasyHistoryTest {
         EasyHistory hs = new EasyHistory(entityManager);
 
         Pessoa p = new Pessoa();
-        p.setNome("diego");
-        p.setCpf("54654564");
+        p.setNome("diego2");
+        p.setCpf("5465456411");
 
         try {
             hs.saveHistoryIfNotEquals(p);

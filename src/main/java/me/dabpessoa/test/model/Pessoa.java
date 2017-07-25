@@ -3,10 +3,7 @@ package me.dabpessoa.test.model;
 import me.dabpessoa.easyHistory.model.enums.HistoryClass;
 import me.dabpessoa.easyHistory.model.enums.HistoryField;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 /**
  * Created by diego.pessoa on 24/07/2017.
@@ -17,6 +14,7 @@ import javax.persistence.Transient;
 public class Pessoa {
 
     @Id private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @HistoryField(name = "nome")
     private String nome;
     @HistoryField(name = "cpf")

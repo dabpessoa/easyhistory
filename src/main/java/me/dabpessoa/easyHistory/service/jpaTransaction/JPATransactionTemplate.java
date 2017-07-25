@@ -19,7 +19,7 @@ public class JPATransactionTemplate {
     }
 
     public void execute(JPATransactionCallbackWithoutResult callback) {
-        execute(callback);
+        execute((JPATransactionCallback)callback);
     }
 
     public <T> T execute(JPATransactionCallback<T> callback) {

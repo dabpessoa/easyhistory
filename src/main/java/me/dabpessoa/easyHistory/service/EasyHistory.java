@@ -11,7 +11,6 @@ import me.dabpessoa.easyHistory.service.jpaTransaction.JPATransactionCallbackWit
 import me.dabpessoa.easyHistory.service.jpaTransaction.JPATransactionTemplate;
 import me.dabpessoa.easyHistory.util.JpaEntityRepository;
 import me.dabpessoa.easyHistory.util.ReflectionUtils;
-import org.dom4j.tree.AbstractEntity;
 
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
@@ -39,13 +38,22 @@ public class EasyHistory implements Historable {
         Object historicoKeyFieldValue = findHistoryKeyFieldValue(originalObject);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("historicoKeyFieldValue", historicoKeyFieldValue);
 
-        List<H> historicos = jpaEntityRepository
-                .queryForList("from "+historicoClass.getName()+" historico where historico."+historicoKeyFieldName+"= :historicoKeyFieldValue order by historico.dataRegistro desc"
-                        , params);
+        StringBuilder sb = new StringBuilder();
+        sb.append(" select historico ");
+        sb.append(" from "+historicoClass.getName()+" historico ");
+        sb.append(" where 1=1 ");
 
+        if (historicoKeyFieldName != null && !historicoKeyFieldName.isEmpty() && historicoKeyFieldValue != null) {
+            sb.append(" and historico."+historicoKeyFieldName+"= :historicoKeyFieldValue ");
+            params.put("historicoKeyFieldValue", historicoKeyFieldValue);
+        }
+
+        sb.append(" order by historico.dataRegistro desc ");
+
+        List<H> historicos = jpaEntityRepository.queryForList(sb.toString(), params);
         return historicos;
+
     }
 
     @Override
@@ -70,13 +78,22 @@ public class EasyHistory implements Historable {
         Object historicoKeyFieldValue = findHistoryKeyFieldValueFromObjectList(originalListObject);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("historicoKeyFieldValue", historicoKeyFieldValue);
 
-        List<H> historicos = jpaEntityRepository
-                .queryForList("from "+historicoListClass.getName()+" historico where historico."+historicoKeyFieldName+"= :historicoKeyFieldValue order by historico.dataRegistro desc"
-                        , params);
+        StringBuilder sb = new StringBuilder();
+        sb.append(" select historico ");
+        sb.append(" from "+historicoListClass.getName()+" historico ");
+        sb.append(" where 1=1 ");
 
+        if (historicoKeyFieldName != null && !historicoKeyFieldName.isEmpty() && historicoKeyFieldValue != null) {
+            sb.append(" and historico."+historicoKeyFieldName+"= :historicoKeyFieldValue ");
+            params.put("historicoKeyFieldValue", historicoKeyFieldValue);
+        }
+
+        sb.append(" order by historico.dataRegistro desc ");
+
+        List<H> historicos = jpaEntityRepository.queryForList(sb.toString(), params);
         return historicos;
+
     }
 
     @Override
@@ -199,9 +216,6 @@ public class EasyHistory implements Historable {
     public void saveHistory(Object originalObject, String[] originalObjectFieldsName, String[] historicoFieldsName, Date dataRegistro, Long codigoUsuario) throws HistoricClassNotFound {
 
         Object historico = createHistoryObjectFromOriginalObject(originalObject, originalObjectFieldsName, historicoFieldsName);
-        if (!(historico instanceof AbstractEntity)) {
-            throw new HistoricRuntimeException("O histórico deve ser uma classe filha de AbastractEntity.");
-        }
 
         if (!(historico instanceof AbstractHistory)) {
             throw new HistoricRuntimeException("A classe de histórico deve extender a classe \"AbstractHistory\".");
@@ -215,7 +229,7 @@ public class EasyHistory implements Historable {
         jpaTransactionTemplate.execute(new JPATransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult() {
-                jpaEntityRepository.save((AbstractEntity) historico);
+                jpaEntityRepository.save(historico);
             }
         });
 
@@ -294,11 +308,25 @@ public class EasyHistory implements Historable {
         Object historicoKeyFieldValue = findHistoryKeyFieldValueFromObjectList(originalListObject);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("historicoKeyFieldValue", historicoKeyFieldValue); // Os valores da lista devem ser iguais, logo o de índice 0 (zero) é igual aos outros.
 
-        List<AbstractHistory> ultimoHistoricoList = jpaEntityRepository
-                .queryForList("from "+historicoListClass.getName()+" historico where historico."+historicoKeyFieldName+"= :historicoKeyFieldValue and historico.dataRegistro = (select max(h1.dataRegistro) from "+historicoListClass.getName()+" h1 where h1."+historicoKeyFieldName+"= :historicoKeyFieldValue)"
-                        , params);
+        StringBuilder sb = new StringBuilder();
+        sb.append(" select historico ");
+        sb.append(" from "+historicoListClass.getName()+" historico ");
+        sb.append(" where 1=1 ");
+        sb.append("   and historico.dataRegistro = (select max(h1.dataRegistro) from "+historicoListClass.getName()+" h1 where 1=1 ");
+
+        if (historicoKeyFieldName != null && !historicoKeyFieldName.isEmpty() && historicoKeyFieldValue != null) {
+            sb.append(" and h1." + historicoKeyFieldName + "= :historicoKeyFieldValue ");
+            params.put("historicoKeyFieldValue", historicoKeyFieldValue);
+        }
+        sb.append(" ) ");
+
+        if (historicoKeyFieldName != null && !historicoKeyFieldName.isEmpty() && historicoKeyFieldValue != null) {
+            sb.append(" and historico."+historicoKeyFieldName+"= :historicoKeyFieldValue ");
+            params.put("historicoKeyFieldValue", historicoKeyFieldValue);
+        }
+
+        List<AbstractHistory> ultimoHistoricoList = jpaEntityRepository.queryForList(sb.toString(), params);
 
         return ultimoHistoricoList;
 
@@ -312,18 +340,32 @@ public class EasyHistory implements Historable {
         Object historicoKeyFieldValue = findHistoryKeyFieldValue(originalObject);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("historicoKeyFieldValue", historicoKeyFieldValue);
 
-        AbstractHistory ultimoHistorico = jpaEntityRepository
-                .queryForOne("from "+historicoClass.getName()+" historico where historico."+historicoKeyFieldName+"= :historicoKeyFieldValue and  historico.dataRegistro = (select max(h1.dataRegistro) from "+historicoClass.getName()+" h1 where h1."+historicoKeyFieldName+"= :historicoKeyFieldValue)"
-                    , params);
+        StringBuilder sb = new StringBuilder();
+        sb.append(" select historico ");
+        sb.append(" from "+historicoClass.getName()+" historico ");
+        sb.append(" where 1=1 ");
+        sb.append("   and historico.dataRegistro = (select max(h1.dataRegistro) from "+historicoClass.getName()+" h1 where 1=1 ");
 
+        if (historicoKeyFieldName != null && !historicoKeyFieldName.isEmpty() && historicoKeyFieldValue != null) {
+            sb.append(" and h1." + historicoKeyFieldName + "= :historicoKeyFieldValue ");
+            params.put("historicoKeyFieldValue", historicoKeyFieldValue);
+        }
+        sb.append(" ) ");
+
+        if (historicoKeyFieldName != null && !historicoKeyFieldName.isEmpty() && historicoKeyFieldValue != null) {
+            sb.append(" and historico."+historicoKeyFieldName+"= :historicoKeyFieldValue ");
+            params.put("historicoKeyFieldValue", historicoKeyFieldValue);
+        }
+
+        AbstractHistory ultimoHistorico = jpaEntityRepository.queryForOne(sb.toString(), params);
         return ultimoHistorico;
 
     }
 
     private Object findHistoryKeyFieldValue(Object originalObject) throws HistoricKeyFieldNotConfigured {
         Field historicoKeyField = findHistoryKeyField(originalObject.getClass());
+        if (historicoKeyField == null) return null;
         Object historicoKeyFieldValue = ReflectionUtils.findFieldValue(originalObject, historicoKeyField);
         return historicoKeyFieldValue;
     }
@@ -336,8 +378,10 @@ public class EasyHistory implements Historable {
 
         for (Object o : list) {
             Field historicoKeyField = findHistoryKeyField(o.getClass());
-            Object historicoKeyFieldValue = ReflectionUtils.findFieldValue(o, historicoKeyField);
-            values.add(historicoKeyFieldValue);
+            if (historicoKeyField != null) {
+                Object historicoKeyFieldValue = ReflectionUtils.findFieldValue(o, historicoKeyField);
+                values.add(historicoKeyFieldValue);
+            }
         }
 
         return values;
@@ -352,10 +396,12 @@ public class EasyHistory implements Historable {
         if (firstListObject == null) return null;
 
         Field firstHistoricoKeyField = findHistoryKeyField(firstListObject.getClass());
+        if (firstHistoricoKeyField == null) return null;
 
         Object historicoKeyFieldValue = ReflectionUtils.findFieldValue(firstListObject, firstHistoricoKeyField);
 
         return historicoKeyFieldValue;
+
     }
 
     private boolean isList(Object originalObject) {
@@ -375,15 +421,12 @@ public class EasyHistory implements Historable {
 
     public String findHistoryKeyFieldName(Class<?> originalObjectClass) throws HistoricKeyFieldNotConfigured {
         Field historicoKeyField = findHistoryKeyField(originalObjectClass);
+        if (historicoKeyField == null) return null;
         return historicoKeyField.getName();
     }
 
     public Field findHistoryKeyField(Class<?> originalObjectClass) throws HistoricKeyFieldNotConfigured {
-        Field historicoKeyField = ReflectionUtils.findFirstFieldByAnnotation(originalObjectClass, HistoryKey.class);
-        if (historicoKeyField == null) {
-            throw new HistoricKeyFieldNotConfigured("A entidade de histórico deve possuir um atributo chave configurado ");
-        }
-        return historicoKeyField;
+        return ReflectionUtils.findFirstFieldByAnnotation(originalObjectClass, HistoryKey.class);
     }
 
     public <T> boolean hasHistoryAnnotation(Class<T> clazz) {
