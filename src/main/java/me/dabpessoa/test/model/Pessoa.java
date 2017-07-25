@@ -1,6 +1,6 @@
 package me.dabpessoa.test.model;
 
-import me.dabpessoa.easyHistory.model.enums.HistoryClass;
+import me.dabpessoa.easyHistory.model.enums.History;
 import me.dabpessoa.easyHistory.model.enums.HistoryField;
 
 import javax.persistence.*;
@@ -10,7 +10,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "pessoa", schema = "easyhistory")
-@HistoryClass(PessoaHistorico.class)
+@History(PessoaHistorico.class)
 public class Pessoa {
 
     @Id private Long id;

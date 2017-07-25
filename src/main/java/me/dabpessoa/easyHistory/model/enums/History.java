@@ -12,6 +12,15 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface HistoryClass {
+public @interface History {
+
+    /**
+     * Representa a classe de histórico
+     */
     Class<? extends AbstractHistory> value();
+    /**
+     * Representa a classe de histórico (outra opção)
+     */
+    Class<? extends AbstractHistory> historyClass() default AbstractHistory.class;
+
 }

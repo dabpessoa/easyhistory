@@ -3,7 +3,7 @@ package me.dabpessoa.easyHistory.service;
 import me.dabpessoa.easyHistory.exceptions.*;
 import me.dabpessoa.easyHistory.model.AbstractHistory;
 import me.dabpessoa.easyHistory.model.HistoricoComparator;
-import me.dabpessoa.easyHistory.model.enums.HistoryClass;
+import me.dabpessoa.easyHistory.model.enums.History;
 import me.dabpessoa.easyHistory.model.enums.HistoryField;
 import me.dabpessoa.easyHistory.model.enums.HistoryKey;
 import me.dabpessoa.easyHistory.model.enums.ListHistoryClass;
@@ -430,7 +430,7 @@ public class EasyHistory implements Historable {
     }
 
     public <T> boolean hasHistoryAnnotation(Class<T> clazz) {
-        return ReflectionUtils.hasClassAnnotation(clazz, HistoryClass.class);
+        return ReflectionUtils.hasClassAnnotation(clazz, History.class);
     }
 
     public <T> boolean hasListHistoryAnnotation(Class<T> clazz) {
@@ -444,8 +444,12 @@ public class EasyHistory implements Historable {
     }
 
     public <T> Class<?> findHistoryClass(Class<T> clazz) {
-        HistoryClass historicoAnnotation = (HistoryClass) ReflectionUtils.findClassAnnotation(clazz, HistoryClass.class);
-        if (historicoAnnotation != null) return historicoAnnotation.value();
+        History historicoAnnotation = (History) ReflectionUtils.findClassAnnotation(clazz, History.class);
+        if (historicoAnnotation != null) {
+            Class<? extends AbstractHistory> historyClass = historicoAnnotation.value();
+            if (historyClass == null) historyClass = historicoAnnotation.historyClass();
+            return historyClass;
+        }
         else return null;
     }
 
